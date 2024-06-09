@@ -4,10 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tone.js Experiments</title>
+  <style>
+    button {
+      display: block;
+      margin: 1em;
+    }
+    h1, h2 {
+      color: #333;
+    }
+  </style>
 </head>
 <body>
-  <button id="play-tone">Play tone</button>
-  <audio src="./2023-07-20-Blind-studio-session---Simon-+-Eva-G-80bpm.mp3" controls></audio>
+  <h1>Tone.js experiments</h1>
+  <h2>Original sounds</h2>
+  <button id="play-tone">Play synth tone</button>
+  <audio id = "original-audio" src="./2023-07-20-Blind-studio-session---Simon-+-Eva-G-80bpm.mp3" controls></audio>
+  <h2>PitchShift</h2>
+  <button id="ps-tone">Play <strong>tone</strong> with PitchShift</button>
+  <button id="ps-audio">Play <strong>audio</strong> with PitchShift</button>
   <script src="http://unpkg.com/tone"></script> <!-- Tone.js -->
   <script src="index.js"></script>
 </body>
