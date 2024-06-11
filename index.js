@@ -9,12 +9,14 @@ function init() {
   // Select DOM nodes
   const playToneButton = document.querySelector('#play-tone');
   const fdToneButton = document.querySelector('#fd-tone');
+  const fdAudioButton = document.querySelector('#fd-audio');
   const psToneButton = document.querySelector('#ps-tone');
   const psAudioButton = document.querySelector('#ps-audio');
 
   // Add listeners
   playToneButton.addEventListener('click', playTone);
   fdToneButton.addEventListener('click', playToneWithFeedbackDelay);
+  fdAudioButton.addEventListener('click', playAudioWithFeedbackDelay);
   psToneButton.addEventListener('click', pitchShiftTone);
   psAudioButton.addEventListener('click', pitchShiftAudio);
 }
@@ -54,6 +56,16 @@ function playToneWithFeedbackDelay() {
 
   // play a middle 'C' for the duration of an 8th note
   synth.triggerAttackRelease('C4', '8n');
+}
+
+function playAudioWithFeedbackDelay() {
+  const player = new Tone.Player('2023-07-20-Blind-studio-session---Simon-+-Eva-G-80bpm.mp3');
+  const feedbackDelay = new Tone.FeedbackDelay('8n', 0.5);
+  
+  player.connect(feedbackDelay);
+  feedbackDelay.toDestination();
+  
+  player.autostart = true;
 }
 
 function pitchShiftTone() {
