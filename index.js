@@ -59,7 +59,10 @@ function playToneWithFeedbackDelay() {
 }
 
 function playAudioWithFeedbackDelay() {
+  // Local audio
   const player = new Tone.Player('2023-07-20-Blind-studio-session---Simon-+-Eva-G-80bpm.mp3');
+  // Remote audio
+  // const player = new Tone.Player('https://cdn.freesound.org/previews/557/557976_12396743-lq.mp3');
   const feedbackDelay = new Tone.FeedbackDelay('8n', 0.5);
   
   player.connect(feedbackDelay);
