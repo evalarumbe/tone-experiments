@@ -98,6 +98,7 @@ class Rig {
     }
 
     console.log('after:', this.inputs);
+    refreshRoutes();
   }
 
   toggleEffect(effect) {
@@ -114,10 +115,18 @@ class Rig {
     }
 
     console.log('after:', this.effects);
+    refreshRoutes();
   }
 
   toggleMute() {
     Tone.Destination.mute = !Tone.Destination.mute;
     console.log(`Muted? ${Tone.Destination.mute}`)
+  }
+
+  refreshRoutes() {
+    // TODO:
+    // connect each of the inputs
+    // to each of the effects
+    // toDestination()
   }
 }
