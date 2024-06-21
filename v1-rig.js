@@ -40,6 +40,10 @@ function init() {
   in1.addEventListener('click', () => rig.toggleInput(rig.player1));
   in2.addEventListener('click', () => rig.toggleInput(rig.player2));
 
+  fxFeedbackDelay.addEventListener('click', () => rig.toggleEffect(rig.feedbackDelay));
+  // fxPitchShift.addEventListener('click', () => rig.toggleEffect(...));
+  // fxLowPassFilter.addEventListener('click', () => rig.toggleEffect(...));
+
   muteButton.addEventListener('click', rig.toggleMute);
 }
 
@@ -47,6 +51,7 @@ class Rig {
   constructor() {
     // declare components that will be routed to output
     this.inputs = []; // to contain 0 to 3 players
+    this.effects = []; // to contain 0 to 3 effects
 
     // instantiate audio players
     this.player0 = new Tone.Player({
@@ -63,9 +68,19 @@ class Rig {
       url: 'https://cdn.freesound.org/previews/558/558018_12396743-lq.mp3',
       loop: true
     });
+
+    // instantiate effects
+    this.feedbackDelay = new Tone.FeedbackDelay({
+      feedback: 0.3,
+      delayTime: 0.7,
+      wet: 0.7,
+    });
+    // this.pitchShift = ...;
+    // this.lowPassFilter =  ...;
     
     // bind event handlers
     this.toggleInput = this.toggleInput.bind(this);
+    this.toggleEffect = this.toggleEffect.bind(this);
     this.toggleMute = this.toggleMute.bind(this);
   }
 
@@ -83,6 +98,22 @@ class Rig {
     }
 
     console.log('after:', this.inputs);
+  }
+
+  toggleEffect(effect) {
+    console.log('\ntoggleEffect\n============');
+    console.log('before:', this.effects);
+    
+    if (this.effects.includes(effect)) {
+      // remove it
+      const index = this.effects.indexOf(effect);
+      this.effects.splice(index, 1); // remove 1 item at index (modifies original array)
+    } else {
+      // add it
+      this.effects.push(effect);
+    }
+
+    console.log('after:', this.effects);
   }
 
   toggleMute() {
