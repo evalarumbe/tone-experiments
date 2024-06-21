@@ -16,23 +16,30 @@
 </head>
 <body>
   <h1>Tone.js experiments</h1>
-  <h2>Original sounds</h2>
+  <h2>Sound check</h2>
   <button id="play-tone">Play synth tone</button>
   <audio id = "original-audio" src="./2023-07-20-Blind-studio-session---Simon-+-Eva-G-80bpm.mp3" controls></audio>
   
-  <h2>FeedbackDelay</h2>
-  <button id="fd-tone">Play <strong>tone</strong> with FeedbackDelay</button>
-  <button id="fd-audio">Play <strong>audio</strong> with FeedbackDelay</button>
+  <h2>Inputs</h2>
+  <ul>
+    <li><button id="in-audio-0">Toggle audio 0</button></li>
+    <li><button id="in-audio-1">Toggle audio 1</button></li>
+    <li><button id="in-audio-2">Toggle audio 2</button></li>
+  </ul>
+  
+  <h2>Effects</h2>
+  <ul>
+    <li><button id="fx-fd">Toggle FeedbackDelay</button></li>
+    <li><button id="fx-ps">Toggle PitchShift</button></li>
+    <li><button id="fx-lpf">Toggle Low-pass Filter</button></li>
+  </ul>
 
-  <h2>PitchShift</h2>
-  <button id="ps-tone">Play <strong>tone</strong> with PitchShift</button>
-  <button id="ps-audio">Play <strong>audio</strong> with PitchShift</button>
   <h2>Mute</h2>
   <button id="mute">Mute all</button>
   
   <!-- scripts -->
   <script src="http://unpkg.com/tone"></script> <!-- Tone.js -->
   <!-- <script src="v0-basic.js"></script> -->
-  <script src="v1-mute.js"></script>
+  <script src="v1-rig.js"></script>
 </body>
 </html>
