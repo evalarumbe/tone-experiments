@@ -97,9 +97,6 @@ class Rig {
   }
 
   toggleEffect(effect) {
-    console.log('\ntoggleEffect\n============');
-    console.log('before:', this.activeEffects);
-    
     if (this.activeEffects.includes(effect)) {
       // remove it
       const index = this.activeEffects.indexOf(effect);
@@ -109,7 +106,6 @@ class Rig {
       this.activeEffects.push(effect);
     }
 
-    console.log('after:', this.activeEffects);
     this.refreshRoutes();
   }
 
