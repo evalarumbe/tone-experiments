@@ -25,49 +25,45 @@ function init() {
   const rig = new Rig();
 
   // Select DOM nodes
-  const in0 = document.querySelector('#in-audio-0');
-  const in1 = document.querySelector('#in-audio-1');
-  const in2 = document.querySelector('#in-audio-2');
+  const wailToggle = document.querySelector('#wail');
+  const strumToggle = document.querySelector('#strum');
+  const rumbleToggle = document.querySelector('#rumble');
   
   const fxFeedbackDelay = document.querySelector('#fx-fd');
   const fxPitchShift = document.querySelector('#fx-ps');
   const fxLowPassFilter = document.querySelector('#fx-lpf');
 
-  const muteButton = document.querySelector('#mute');
+  const muteToggle = document.querySelector('#mute');
 
   // Add listeners
-  in0.addEventListener('click', () => rig.toggleInput(rig.player0));
-  in1.addEventListener('click', () => rig.toggleInput(rig.player1));
-  in2.addEventListener('click', () => rig.toggleInput(rig.player2));
+  wailToggle.addEventListener('click', () => rig.togglePlayer('wail'));
+  strumToggle.addEventListener('click', () => rig.togglePlayer('strum'));
+  rumbleToggle.addEventListener('click', () => rig.togglePlayer('rumble'));
 
   fxFeedbackDelay.addEventListener('click', () => rig.toggleEffect(rig.feedbackDelay));
   // fxPitchShift.addEventListener('click', () => rig.toggleEffect(...));
   // fxLowPassFilter.addEventListener('click', () => rig.toggleEffect(...));
 
-  muteButton.addEventListener('click', rig.toggleMute);
+  muteToggle.addEventListener('click', rig.toggleMute);
 }
 
 class Rig {
   constructor() {
-    // declare components that will be routed to output
-    this.inputs = []; // to contain 0 to 3 players
-    this.effects = []; // to contain 0 to 3 effects
-
     // instantiate audio players
-    this.player0 = new Tone.Player({
-      url: 'https://cdn.freesound.org/previews/557/557977_12396743-lq.mp3',
-      loop: true
-    });
+    this.players = new Tone.Players(
+      {
+        wail: 'https://cdn.freesound.org/previews/557/557948_12396743-lq.mp3',
+        strum: 'https://cdn.freesound.org/previews/557/557978_12396743-lq.mp3',
+        rumble: 'https://cdn.freesound.org/previews/558/558018_12396743-lq.mp3',
+      },
+    );
+    this.players.player('wail').loop = true;
+    this.players.player('strum').loop = true;
+    this.players.player('rumble').loop = true;
 
-    this.player1 = new Tone.Player({
-      url: 'https://cdn.freesound.org/previews/557/557978_12396743-lq.mp3',
-      loop: true
-    });
-
-    this.player2 = new Tone.Player({
-      url: 'https://cdn.freesound.org/previews/558/558018_12396743-lq.mp3',
-      loop: true
-    });
+    // declare components that will be routed to output
+    this.activePlayers = []; // to contain 0 to 3 strings (player names)
+    this.activeEffects = []; // to contain 0 to 3 effects
 
     // instantiate effects
     this.feedbackDelay = new Tone.FeedbackDelay({
@@ -79,54 +75,53 @@ class Rig {
     // this.lowPassFilter =  ...;
     
     // bind event handlers
-    this.toggleInput = this.toggleInput.bind(this);
+    this.togglePlayer = this.togglePlayer.bind(this);
     this.toggleEffect = this.toggleEffect.bind(this);
     this.toggleMute = this.toggleMute.bind(this);
   }
 
-  toggleInput(input) {
-    console.log('\ntoggleInput\n===========');
-    console.log('before:', this.inputs);
-    
-    if (this.inputs.includes(input)) {
+  togglePlayer(playerName) {    
+    if (this.activePlayers.includes(playerName)) {
       // remove it
-      const index = this.inputs.indexOf(input);
-      this.inputs.splice(index, 1); // remove 1 item at index (modifies original array)
+      const index = this.activePlayers.indexOf(playerName);
+      this.activePlayers.splice(index, 1); // remove 1 item at index (modifies original array)
     } else {
       // add it
-      this.inputs.push(input);
+      this.activePlayers.push(playerName);
     }
 
-    console.log('after:', this.inputs);
-    refreshRoutes();
+    this.refreshRoutes();
   }
 
   toggleEffect(effect) {
     console.log('\ntoggleEffect\n============');
-    console.log('before:', this.effects);
+    console.log('before:', this.activeEffects);
     
-    if (this.effects.includes(effect)) {
+    if (this.activeEffects.includes(effect)) {
       // remove it
-      const index = this.effects.indexOf(effect);
-      this.effects.splice(index, 1); // remove 1 item at index (modifies original array)
+      const index = this.activeEffects.indexOf(effect);
+      this.activeEffects.splice(index, 1); // remove 1 item at index (modifies original array)
     } else {
       // add it
-      this.effects.push(effect);
+      this.activeEffects.push(effect);
     }
 
-    console.log('after:', this.effects);
-    refreshRoutes();
+    console.log('after:', this.activeEffects);
+    this.refreshRoutes();
   }
 
   toggleMute() {
     Tone.Destination.mute = !Tone.Destination.mute;
-    console.log(`Muted? ${Tone.Destination.mute}`)
   }
 
+  // Reroute audio whenever an player source or effect is added/removed
   refreshRoutes() {
-    // TODO:
-    // connect each of the inputs
-    // to each of the effects
-    // toDestination()
+    this.players.stopAll();
+
+    this.activePlayers.forEach(playerName => {
+      this.players.player(playerName).start();
+    });
+
+    this.players.chain(...this.activeEffects, Tone.Destination);
   }
 }
