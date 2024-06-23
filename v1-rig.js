@@ -41,8 +41,8 @@ function init() {
   rumbleToggle.addEventListener('click', () => rig.togglePlayer('rumble'));
 
   fxFeedbackDelay.addEventListener('click', () => rig.toggleEffect(rig.feedbackDelay));
-  // fxPitchShift.addEventListener('click', () => rig.toggleEffect(...));
-  // fxLowPassFilter.addEventListener('click', () => rig.toggleEffect(...));
+  fxPitchShift.addEventListener('click', () => rig.toggleEffect(rig.pitchShift));
+  fxLowPassFilter.addEventListener('click', () => rig.toggleEffect(rig.lowPassFilter));
 
   muteToggle.addEventListener('click', rig.toggleMute);
 }
@@ -71,8 +71,11 @@ class Rig {
       delayTime: 0.7,
       wet: 0.7,
     });
-    // this.pitchShift = ...;
-    // this.lowPassFilter =  ...;
+    this.pitchShift = new Tone.PitchShift(7); // up a fifth
+    this.lowPassFilter =  new Tone.Filter({
+      frequency: 'C4',
+      type: 'lowpass',
+    });
     
     // bind event handlers
     this.togglePlayer = this.togglePlayer.bind(this);
@@ -116,12 +119,18 @@ class Rig {
 
   // Reroute audio whenever an player source or effect is added/removed
   refreshRoutes() {
+    // reset effects
+    this.players.disconnect();
+    
+    // reset players
     this.players.stopAll();
 
+    // enable active players
     this.activePlayers.forEach(playerName => {
       this.players.player(playerName).start();
     });
 
+    // enable active effects
     this.players.chain(...this.activeEffects, Tone.Destination);
   }
 }
