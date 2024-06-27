@@ -22,12 +22,37 @@ function playTone() {
 window.addEventListener('load', init);
 
 function init() {
-  const rig = new Rig();
+  // Set up dummy data
+  const placeholderSounds = [
+    {
+      'id': 557976,
+      'url': 'https://cdn.freesound.org/previews/557/557976_12396743-lq.mp3',
+    },
+    {
+      'id': 557977,
+      'url': 'https://cdn.freesound.org/previews/557/557977_12396743-lq.mp3',
+    },
+    {
+      'id': 557978,
+      'url': 'https://cdn.freesound.org/previews/557/557978_12396743-lq.mp3',
+    },
+    {
+      'id': 557979,
+      'url': 'https://cdn.freesound.org/previews/557/557979_12396743-lq.mp3',
+    },
+    {
+      'id': 557980,
+      'url': 'https://cdn.freesound.org/previews/557/557980_12396743-lq.mp3',
+    },
+  ];
+
+  // Start the Rig
+  const rig = new Rig(placeholderSounds);
 
   // Select DOM nodes
-  const wailToggle = document.querySelector('#wail');
-  const strumToggle = document.querySelector('#strum');
-  const rumbleToggle = document.querySelector('#rumble');
+  const sound0Toggle = document.querySelector('#sound-0');
+  const sound1Toggle = document.querySelector('#sound-1');
+  const sound2Toggle = document.querySelector('#sound-2');
   
   const fxFeedbackDelay = document.querySelector('#fx-fd');
   const fxPitchShift = document.querySelector('#fx-ps');
@@ -36,9 +61,9 @@ function init() {
   const muteToggle = document.querySelector('#mute');
 
   // Add listeners
-  wailToggle.addEventListener('click', () => rig.togglePlayer('wail'));
-  strumToggle.addEventListener('click', () => rig.togglePlayer('strum'));
-  rumbleToggle.addEventListener('click', () => rig.togglePlayer('rumble'));
+  sound0Toggle.addEventListener('click', rig.togglePlayer0);
+  sound1Toggle.addEventListener('click', rig.togglePlayer1);
+  sound2Toggle.addEventListener('click', rig.togglePlayer2);
 
   fxFeedbackDelay.addEventListener('click', () => rig.toggleEffect(rig.feedbackDelay));
   fxPitchShift.addEventListener('click', () => rig.toggleEffect(rig.pitchShift));
@@ -47,19 +72,37 @@ function init() {
   muteToggle.addEventListener('click', rig.toggleMute);
 }
 
+// endpoint is an array with at least 3 sounds, e.g. placeholderSounds
+function getRandomSounds(endpoint) {  
+  const threeRandomSounds = [];
+  
+  const getRandomSound = endpoint => endpoint[
+      Math.floor(Math.random() * endpoint.length)
+    ];
+  
+  while (threeRandomSounds.length < 3) {
+    const randomSound = getRandomSound(endpoint);
+
+    // if we haven't selected this sound yet, push it
+    if (!threeRandomSounds.includes(randomSound)) {
+      threeRandomSounds.push(randomSound);
+    } else {
+      // keep trying for a unique sound
+      continue;
+    }
+  }
+
+  return threeRandomSounds;
+}
+
 class Rig {
-  constructor() {
-    // instantiate audio players
-    this.players = new Tone.Players(
-      {
-        wail: 'https://cdn.freesound.org/previews/557/557948_12396743-lq.mp3',
-        strum: 'https://cdn.freesound.org/previews/557/557978_12396743-lq.mp3',
-        rumble: 'https://cdn.freesound.org/previews/558/558018_12396743-lq.mp3',
-      },
-    );
-    this.players.player('wail').loop = true;
-    this.players.player('strum').loop = true;
-    this.players.player('rumble').loop = true;
+  constructor(endpoint) {    
+    // callbacks to be populated by this.instantiateAudioPlayers (must be declared before calling instantiateAudioPlayers())
+    this.togglePlayer0 = function() {};
+    this.togglePlayer1 = function() {};
+    this.togglePlayer2 = function() {};
+
+    this.players = this.instantiateAudioPlayers(getRandomSounds(endpoint)); // to contain 3 x Tone.Player
 
     // declare components that will be routed to output
     this.activePlayers = []; // to contain 0 to 3 strings (player names)
@@ -83,7 +126,27 @@ class Rig {
     this.toggleMute = this.toggleMute.bind(this);
   }
 
-  togglePlayer(playerName) {    
+  instantiateAudioPlayers(randomSounds) {
+    const players = new Tone.Players({});
+    
+    randomSounds.forEach((sound, index) => {
+      const playerName = sound.id.toString();
+
+      players.add(playerName, sound.url);
+      players.player(playerName).loop = true;
+
+      // If a placeholder property exists for this index
+      // E.g. this.togglePlayer0, this.togglePlayer1, this.togglePlayer2
+      if (this[`togglePlayer${index}`]) {
+        // Populate it with a callback to toggle this sound
+        this[`togglePlayer${index}`] = () => this.togglePlayer(playerName);
+      }
+    });
+
+    return players;
+  }
+
+  togglePlayer(playerName) {
     if (this.activePlayers.includes(playerName)) {
       // remove it
       const index = this.activePlayers.indexOf(playerName);
