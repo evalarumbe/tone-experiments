@@ -12,7 +12,7 @@ playToneButton.addEventListener('click', playTone);
 function playTone() {
   // create a synth and connect it to the main output (your speakers)
   const synth = new Tone.Synth().toDestination();
-  
+
   // play a middle 'C' for the duration of an 8th note
   synth.triggerAttackRelease('C4', '8n');
 }
@@ -47,13 +47,10 @@ function init() {
   ];
 
   // Start the Rig
-  const rig = new Rig(placeholderSounds);
+  const rig = new Rig();
+  const samples = new Samples(rig, placeholderSounds);
 
-  // Select DOM nodes
-  const sound0Toggle = document.querySelector('#sound-0');
-  const sound1Toggle = document.querySelector('#sound-1');
-  const sound2Toggle = document.querySelector('#sound-2');
-  
+  // Select DOM nodes  
   const fxFeedbackDelay = document.querySelector('#fx-fd');
   const fxPitchShift = document.querySelector('#fx-ps');
   const fxLowPassFilter = document.querySelector('#fx-lpf');
@@ -61,10 +58,6 @@ function init() {
   const muteToggle = document.querySelector('#mute');
 
   // Add listeners
-  sound0Toggle.addEventListener('click', rig.togglePlayer0);
-  sound1Toggle.addEventListener('click', rig.togglePlayer1);
-  sound2Toggle.addEventListener('click', rig.togglePlayer2);
-
   fxFeedbackDelay.addEventListener('click', () => rig.toggleEffect(rig.feedbackDelay));
   fxPitchShift.addEventListener('click', () => rig.toggleEffect(rig.pitchShift));
   fxLowPassFilter.addEventListener('click', () => rig.toggleEffect(rig.lowPassFilter));
@@ -72,38 +65,60 @@ function init() {
   muteToggle.addEventListener('click', rig.toggleMute);
 }
 
-// endpoint is an array with at least 3 sounds, e.g. placeholderSounds
-function getRandomSounds(endpoint) {  
-  const threeRandomSounds = [];
-  
-  const getRandomSound = endpoint => endpoint[
-      Math.floor(Math.random() * endpoint.length)
-    ];
-  
-  while (threeRandomSounds.length < 3) {
-    const randomSound = getRandomSound(endpoint);
+class Samples {
+  constructor(rig, placeholderSounds) {
+    this.randomSounds = this.getRandomSounds(placeholderSounds);
+    rig.instantiateAudioPlayers(this.randomSounds);
+    const [togglePlayer0, togglePlayer1, togglePlayer2] = this.getToggleHandlers(rig, this.randomSounds);
 
-    // if we haven't selected this sound yet, push it
-    if (!threeRandomSounds.includes(randomSound)) {
-      threeRandomSounds.push(randomSound);
-    } else {
-      // keep trying for a unique sound
-      continue;
-    }
+    // Select DOM nodes
+    const sound0Toggle = document.querySelector('#sound-0');
+    const sound1Toggle = document.querySelector('#sound-1');
+    const sound2Toggle = document.querySelector('#sound-2');
+
+    // Add listeners
+    sound0Toggle.addEventListener('click', togglePlayer0);
+    sound1Toggle.addEventListener('click', togglePlayer1);
+    sound2Toggle.addEventListener('click', togglePlayer2);
   }
 
-  return threeRandomSounds;
+  // endpoint is an array with at least 3 sounds, e.g. placeholderSounds
+  getRandomSounds(endpoint) {  
+    const threeRandomSounds = [];
+    
+    const getRandomSound = endpoint => endpoint[
+        Math.floor(Math.random() * endpoint.length)
+      ];
+  
+    while (threeRandomSounds.length < 3) {
+      const randomSound = getRandomSound(endpoint);
+
+      // if we haven't selected this sound yet, push it
+      if (!threeRandomSounds.includes(randomSound)) {
+        threeRandomSounds.push(randomSound);
+      } else {
+        // keep trying for a unique sound
+        continue;
+      }
+    }
+
+    return threeRandomSounds;
+  }
+
+  getToggleHandlers(rig, randomSounds) {
+    const handlers = [];
+
+    randomSounds.forEach(sound => {
+      const playerName = sound.id.toString();
+      handlers.push(() => rig.togglePlayer(playerName));
+    });
+
+    return handlers;
+  }
 }
 
 class Rig {
-  constructor(endpoint) {    
-    // callbacks to be populated by this.instantiateAudioPlayers (must be declared before calling instantiateAudioPlayers())
-    this.togglePlayer0 = function() {};
-    this.togglePlayer1 = function() {};
-    this.togglePlayer2 = function() {};
-
-    this.players = this.instantiateAudioPlayers(getRandomSounds(endpoint)); // to contain 3 x Tone.Player
-
+  constructor() {
     // declare components that will be routed to output
     this.activePlayers = []; // to contain 0 to 3 strings (player names)
     this.activeEffects = []; // to contain 0 to 3 effects
@@ -134,16 +149,9 @@ class Rig {
 
       players.add(playerName, sound.url);
       players.player(playerName).loop = true;
-
-      // If a placeholder property exists for this index
-      // E.g. this.togglePlayer0, this.togglePlayer1, this.togglePlayer2
-      if (this[`togglePlayer${index}`]) {
-        // Populate it with a callback to toggle this sound
-        this[`togglePlayer${index}`] = () => this.togglePlayer(playerName);
-      }
     });
 
-    return players;
+    this.players = players;
   }
 
   togglePlayer(playerName) {
@@ -188,7 +196,7 @@ class Rig {
     this.activePlayers.forEach(playerName => {
       this.players.player(playerName).start();
     });
-
+    console.log(this.activePlayers)
     // enable active effects
     this.players.chain(...this.activeEffects, Tone.Destination);
   }
